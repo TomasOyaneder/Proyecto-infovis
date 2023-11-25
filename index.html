@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://d3js.org/d3.v7.js"></script>
+    <title>PROYECTORMENTOR</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1>NBA</h1>
+
+        <h2>Visualización 1 - el mapita con los equipos</h2>
+        <div id="vis-1">
+            <div class="tooltip" id="tooltip"></div>
+        </div>
+
+        <h2>Visualización 2 - grafico con stats cul</h2>
+        <div id="vis-2">
+            <h4 id="selected"></h4>
+        </div>
+
+        <h2>LE BONS BAY</h2>
+        <div id="vis-3">
+            <div>
+                <h5>Filtrar por categoria</h5>
+                <button id="showCat2">Gano MVP</button>
+                <button id="showCat1">No gano MVP</button>
+            </div>
+            <div>
+                <h5>Mostrar por:</h5>
+                <button id="filter-button">Mayores puntos por partido</button>
+                <button id="filter-reset">Mayor porcentaje de triples</button>
+                <button id="filter-reset">Mayor porcentaje de tiros de campo</button>
+                <button id="filter-reset">Mayor porcentaje de tiros libres</button>
+            </div>
+
+            <!--<img src="https://cdn.nba.com/headshots/nba/latest/1040x760/2544.png" style="opacity:0.08">-->
+        </div>
+    </div>
+    <script src="main.js"></script>
+</body>
+
+</html>

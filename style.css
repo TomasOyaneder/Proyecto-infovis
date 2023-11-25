@@ -1,0 +1,32 @@
+body {
+    margin: 0 auto;
+    /* Puedes cambiar el color de fondo (background-color) si lo deseas */
+    background-color: rgb(15, 15, 15);
+    color: whitesmoke;
+    max-width: 1200px;
+    min-width: 500px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+h5 {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+svg {
+    border: solid 4px white;
+}
+
+.tooltip {
+    position: absolute;
+    background-color: white;
+    color:rgb(15, 15, 15);
+    padding: 5px;
+    border: 1px solid #ddd;
+    opacity: 0;
+    pointer-events: none;
+    border-radius: 8px;
+  }
