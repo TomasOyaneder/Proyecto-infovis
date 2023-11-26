@@ -39,6 +39,7 @@ const equiposNBA = {
   "Wizards": "#002b5e"
 };
 
+// Visualización 1 - Mapa de Estados Unidos con equipos de la NBA
 
 SVG1.attr('width', width1).attr('height', height1);
 
@@ -116,6 +117,214 @@ d3.json('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/g
     });
   });
 });
+
+// Visualización 2 - Gráfico de barras agrupado
+// 2 filtros: Conferencia y Palmares
+// Para Conferencia, filtro de season
+
+SVG2.attr('width', 1200).attr('height', 900);
+
+// Definimos las dimensiones del gráfico
+const margin = {top: 20, right: 20, bottom: 30, left: 40};
+const width = +SVG2.attr('width') - margin.left - margin.right;
+const height = +SVG2.attr('height') - margin.top - margin.bottom;
+
+// Definimos las escalas
+const x0 = d3.scaleBand().rangeRound([0, width]).paddingInner(0.1);
+const x1 = d3.scaleBand().padding(0.05);
+const y = d3.scaleLinear().rangeRound([height, 0]);
+
+// Agregamos el svg al div
+const g = SVG2.append('g')
+            .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
+const tooltip2 = d3.select("#tooltip2");
+
+// Carga de datos
+const data_conferencia = d3.json('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/arenas.geojson');
+const data_palmares = d3.csv('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PALMARES_NBA_NUEVO.csv');
+const data_season = d3.csv('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/teams_nba.csv');
+
+function parseo_conferencia(d) {
+  return {
+    team: d.properties.team,
+    conference: d.properties.conference,
+  };
+}
+
+function parseo_palmares(d) {
+  return {
+    Equipo: d.Equipo,
+    Campeonatos: +d.Campeonatos,
+    Subcampeonatos: +d.Subcampeonatos,
+    Titulos: d.Títulos,
+    Image: d.Image,
+  }
+}
+
+function parseo_season(d) {
+  return {
+    Team: d.Nombre,
+    Season: d.Temporada,
+    Victorias: +d.Victorias,
+    Derrotas: +d.Derrotas,
+  }
+}
+
+Promise.all([data_conferencia, data_palmares, data_season]).then(function(data) {
+  const conferencia = data[0];
+  const palmares = data[1];
+  const season = data[2];
+
+  const conferenciasMap = conferencia.features.map(parseo_conferencia);
+  const palmaresMap = palmares.map(parseo_palmares);
+  const seasonMap = season.map(parseo_season);
+
+  // Función para ver si se cambió el filtro de conferencia
+  d3.select('#conferencia').on('change', function() {
+    update_vis_2(true);
+  });
+
+  // Función para ver si se cambió el boton de palmares
+  d3.select('#palmares').on('click', function() {
+    update_vis_2(false);
+  });
+
+  // Función para ver si se cambió el filtro de season
+  d3.select('#season').on('change', function() {
+    update_vis_2(true);
+  });
+
+  // Función para actualizar el gráfico
+  function update_vis_2(bool_conferencia) {
+    const selected_conferencia = d3.select('#conferencia').property('value');
+    const selected_season = d3.select('#season').property('value');
+
+    const filtered_conferencia = conferenciasMap.filter(x => x.conference === selected_conferencia);
+    const filtered_palmares = palmaresMap;
+    const filtered_season = seasonMap.filter(x => x.Season === selected_season);
+
+    // console.log("Palmares filtrados: ", filtered_palmares);
+
+    // Definimos las escalas
+    if (bool_conferencia) {
+      x0.domain(filtered_conferencia.map(d => d.team));
+      x1.domain(['Victorias', 'Derrotas']).rangeRound([0, x0.bandwidth()]);
+      y.domain([0, d3.max(filtered_season, d => d3.max([d.Victorias, d.Derrotas]))]).nice();
+    }
+
+    else {
+      x0.domain(filtered_palmares.map(d => d.Equipo));
+      x1.domain(['Campeonatos', 'Subcampeonatos']).rangeRound([0, x0.bandwidth()]);
+      y.domain([0, d3.max(filtered_palmares, d => d3.max([d.Campeonatos, d.Subcampeonatos]))]).nice();
+    }
+
+    // Agregamos los ejes
+    g.selectAll('.axis').remove();
+    g.append('g')
+      .attr('class', 'axis')
+      .attr('transform', `translate(0, ${height})`)
+      .call(d3.axisBottom(x0));
+
+    g.append('g')
+      .attr('class', 'axis')
+      .call(d3.axisLeft(y).ticks(null, 's'))
+      .append('text')
+      .attr('x', 2)
+      .attr('y', y(y.ticks().pop()) + 0.5)
+      .attr('dy', '0.32em')
+      .attr('fill', '#000')
+      .attr('font-weight', 'bold')
+      .attr('text-anchor', 'start');
+
+    // Agregamos las barras
+    g.selectAll('.bar').remove();
+
+    // console.log("Datos seleccionados: ", bool_conferencia ? filtered_season : filtered_palmares);
+    const bars = g.selectAll('g')
+      .data(bool_conferencia ? filtered_season : filtered_palmares)
+      .enter()
+      .append('g')
+      .attr('transform', d => `translate(${bool_conferencia ? x0(d.Team) : x0(d.Equipo)}, 0)`);
+
+    console.log(bool_conferencia)
+
+    bars.selectAll('rect')
+    .data(d => {
+      // Crear los datos para las barras
+      const barData = bool_conferencia ? 
+          [{key: 'Victorias', value: d.Victorias}, {key: 'Derrotas', value: d.Derrotas}] : 
+          [{key: 'Campeonatos', value: d.Campeonatos}, {key: 'Subcampeonatos', value: d.Subcampeonatos}];
+
+      // Imprimir los datos en la consola
+      console.log("Datos de la barra:", barData);
+
+      // Retornar los datos para usarlos en las barras
+      return barData;
+  })
+      .enter()
+      .append('rect')
+      .attr('x', d => x1(d.key))
+      .attr('y', d => y(d.value))
+      .attr('width', x1.bandwidth())
+      .attr('height', d => height - y(d.value))
+      .attr('fill', d => d.key === 'Victorias' || d.key === 'Campeonatos' ? '#003da5' : '#ce1141')
+      .on('mouseover', function(event, d) {
+        tooltip2.html(`${d.key}: ${d.value}`)
+              .style('left', (event.pageX + 10) + 'px')
+              .style('top', (event.pageY -20) + 'px');
+        tooltip2.style('opacity', 1);
+      })
+      .on('mouseout', function() {
+        tooltip2.style('opacity', 0);
+      });
+
+    // Agregamos la leyenda
+    g.selectAll('.legend').remove();
+    const legend = g.selectAll('.legend')
+      .data(bool_conferencia ? ['Victorias', 'Derrotas'] : ['Campeonatos', 'Subcampeonatos'])
+      .enter()
+      .append('g')
+      .attr('class', 'legend')
+      .attr('transform', (d, i) => `translate(0, ${i * 20})`);
+
+    legend.append('rect')
+      .attr('x', width - 18)
+      .attr('width', 18)
+      .attr('height', 18)
+      .attr('fill', d => d === 'Victorias' || d === 'Campeonatos' ? '#003da5' : '#ce1141');
+
+    legend.append('text')
+      .attr('x', width - 24)
+      .attr('y', 9)
+      .attr('dy', '0.32em')
+      .attr('text-anchor', 'end')
+      .text(d => d);
+
+  }
+
+  update_vis_2(true);
+
+});
+
+
+
+
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
 
 
 
