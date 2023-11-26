@@ -80,7 +80,7 @@ d3.json('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/g
     .style('visibility', 'hidden');
 
   d3.json('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/arenas.geojson').then(function (geo_teams) {
-    d3.csv('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PALMARES_NBA_NUEVO.csv').then(function(teams) {
+    d3.dsv(';', 'https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PALMARES_NBA_NUEVO_.csv').then(function(teams) {
 
     SVG1.selectAll('circle')
     .data(geo_teams.features)
@@ -91,9 +91,9 @@ d3.json('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/g
     .attr('r', 10)
     .style('fill', d => equiposNBA[d.properties.team])
     .on('mouseover', function(event, d) {
-      console.log(`Equipo: ${d.properties.team}`);
-      const logo = teams.find(x => x.Equipo === d.properties.team);
-      console.log(`${logo.Image}`);
+      //console.log(`Equipo: ${d.properties.team}`);
+      const logo = teams.find(x => x.Equipo.split(' ').pop() === d.properties.team.split(' ').pop()); //el split().pop() es para agarrar la ultima palabra del nombre del equipo ya que los datasets difieren en los nombres por las ciudades
+      //console.log(`${logo.Image}`);
       tooltip.html(`<object data="${logo.Image}" type="image/svg+xml"></object> <br> Equipo: ${d.properties.team} <br> Conferencia: ${d.properties.conference} <br> Ciudad: ${d.properties.city} <br> Estadio: ${d.properties.arena}`)
             .style('left', (event.pageX + 10) + 'px')
             .style('top', (event.pageY -20) + 'px');
@@ -142,7 +142,7 @@ const tooltip2 = d3.select("#tooltip2");
 
 // Carga de datos
 const data_conferencia = d3.json('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/arenas.geojson');
-const data_palmares = d3.csv('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PALMARES_NBA_NUEVO.csv');
+const data_palmares = d3.dsv(';', 'https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PALMARES_NBA_NUEVO_.csv');
 const data_season = d3.csv('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/teams_nba.csv');
 
 function parseo_conferencia(d) {
@@ -204,7 +204,7 @@ Promise.all([data_conferencia, data_palmares, data_season]).then(function(data) 
     const filtered_palmares = palmaresMap;
     const filtered_season = seasonMap.filter(x => x.Season === selected_season);
 
-    // console.log("Palmares filtrados: ", filtered_palmares);
+     //console.log("Palmares filtrados: ", filtered_palmares);
 
     // Definimos las escalas
     if (bool_conferencia) {
@@ -240,14 +240,14 @@ Promise.all([data_conferencia, data_palmares, data_season]).then(function(data) 
     // Agregamos las barras
     g.selectAll('.bar').remove();
 
-    // console.log("Datos seleccionados: ", bool_conferencia ? filtered_season : filtered_palmares);
+     console.log("Datos seleccionados: ", bool_conferencia ? filtered_season : filtered_palmares);
     const bars = g.selectAll('g')
       .data(bool_conferencia ? filtered_season : filtered_palmares)
       .enter()
       .append('g')
       .attr('transform', d => `translate(${bool_conferencia ? x0(d.Team) : x0(d.Equipo)}, 0)`);
 
-    console.log(bool_conferencia)
+    console.log(bool_conferencia);
 
     bars.selectAll('rect')
     .data(d => {
@@ -257,7 +257,7 @@ Promise.all([data_conferencia, data_palmares, data_season]).then(function(data) 
           [{key: 'Campeonatos', value: d.Campeonatos}, {key: 'Subcampeonatos', value: d.Subcampeonatos}];
 
       // Imprimir los datos en la consola
-      console.log("Datos de la barra:", barData);
+      console.log("Datos de la barra:", barData)
 
       // Retornar los datos para usarlos en las barras
       return barData;
@@ -312,81 +312,82 @@ Promise.all([data_conferencia, data_palmares, data_season]).then(function(data) 
 
 
 
+// Visualizacion 3 -------------------------------------------
+
+const width3 = 1200;
+const height3 = 900;
+
+SVG3.attr('width', width3 ).attr('height', height3);
 
     
+d3.csv('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PLAYERS_NBA.csv').then(function (jugadores) {
+
+
+  const sorted_pts = jugadores.slice().sort((a, b) => b.PTS - a.PTS);
+  const filtered_jugadores = sorted_pts.slice(0, 20);
 
 
 
+  const simulation = d3.forceSimulation(filtered_jugadores)
+    .force('attractToCenterX', d3.forceX(width3 / 2).strength(0.05)) 
+    .force('attractToCenterY', d3.forceY(height3 / 2).strength(0.05))
+    .force('collision', d3.forceCollide(d => d.PTS*3).strength(0.5)) 
+    .on('tick', ticked);
 
 
+  const circles = SVG3.selectAll('.circle')
+    .data(filtered_jugadores)
+    .enter().append('g')
+    .attr('class', 'circle')
+    .call(drag(simulation));
+
+  circles.append('image')
+    .attr('href', d => d.Image)
+    .attr('width', d => d.PTS*3)
+    .attr('height', d => d.PTS*3)
+    .attr('x', d => -d.PTS*3)
+    .attr('y', d => -d.PTS*3);
+    //.attr('x', (d, i) => circulos_agregados.nodes()[i].getAttribute('cx') + d.PTS*5)
+    //.attr('y', (d, i) => circles_agregados.nodes()[i].getAttribute('cy') + d.PTS*5);
+
+    circles.append('circle')
+    .attr('cx', Math.random()*(width3-200))
+    .attr('cy', Math.random()*(height3-100))
+    .attr('r', d => d.PTS*3);
 
 
+  function ticked() {
+    circles.attr('transform', d => `translate(${d.x},${d.y})`);
+      //.attr('cx', d => d.x)
+      //.attr('cy', d => d.y);
+  }
 
 
+  function drag(simulation) {
+    function dragstarted(event, d) {
+      if (!event.active) simulation.alphaTarget(0.3).restart();
+      d.fx = d.x;
+      d.fy = d.y;
+    }
+
+    function dragged(event, d) {
+      d.fx = event.x;
+      d.fy = event.y;
+    }
+
+    function dragended(event, d) {
+      if (!event.active) simulation.alphaTarget(0);
+      d.fx = null;
+      d.fy = null;
+    }
+
+    return d3.drag()
+      .on('start', dragstarted)
+      .on('drag', dragged)
+      .on('end', dragended);
+  }
 
 
+});
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-
-
-
-SVG3.attr("width", 1200).attr("height", 900);
-
-
-
-const data = [
-    { x: 50, y: 100, r: 20 },
-    { x: 150, y: 200, r: 30 },
-    { x: 250, y: 150, r: 25 },
-    // Puedes agregar más datos aquí
-  ];
-
-
-d3.csv('PLAYERS_NBA.csv').then(function(data1) {
-    SVG3.selectAll("image")
-    .data(data1)
-    .enter().append("image")
-    //.attr("class", "bubble") // Agrega una clase para aplicar estilos (opcional)
-    .attr("x", 200)
-    .attr("y", 200)
-    .attr('width', 40)
-    .attr('height', 40)
-    .attr('xlink:href', d => d.Image);
-
-
-    SVG3.sellectAll('circle')
-    .enter()
-    .append('circle')
-    .attr('cx', 500)
-    .attr('cy', 500)
-    .attr('r', 100)
-    .attr('fill', 'white');
-
-})
-
-const ola = SVG3.append('circle')
-.attr('cx', 500)
-.attr('cy', 500)
-.attr('r', 100)
-.attr('fill', 'white');  
-
-*/
