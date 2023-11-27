@@ -894,7 +894,7 @@ function limpiar_vis_32() {
     }
 
   // Creamos un zoom para la visualización
-    const zoom = d3.zoom().scaleExtent([1, 8]).on('zoom', zoomed);
+    const zoom = d3.zoom().scaleExtent([0, 2]).on('zoom', zoomed);
 
     SVG3.call(zoom);
 
