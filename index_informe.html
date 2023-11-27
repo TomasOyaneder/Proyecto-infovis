@@ -38,19 +38,30 @@
                 <h4>Fuente original de los datos</h4>
                 <!-- Puedes agregar los P que sean necesarios -->
                 <h4>Respuesta:</h4>
-                <p>Modifica solo este texto (no el de arriba) para poner tu respuesta</p>
+                <p>-<a href="https://data.world/etocco/nba-team-stats">Datos de las temporadas: 2006-07 a 2023-24</a></p>
+                <p>-<a href= "https://data.world/etocco/nba-player-stats">Datos de los jugadores</a></p>
+                <p>-<a href="https://es.wikipedia.org/wiki/National_Basketball_Association#Palmar%C3%A9s">Datos del palmarés de los equipos</a></p>
+                <p>-<a href="https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/arenas.geojson">Datos de la conferencia de los equipos</a></p>
+                <p>-<a href="us-states.json :https://github.com/PublicaMundi/MappingAPI/blob/master/data/geojson/us-states.json">Datos geográficos</a></p>
+
             </div>
             <div class="response">
                 <h4>Usuario objetivo</h4>
                 <!-- Puedes agregar los P que sean necesarios -->
                 <h4>Respuesta:</h4>
-                <p>Modifica solo este texto (no el de arriba) para poner tu respuesta</p>
+                <p>
+                    Usuario objetivo: La herramienta está diseñada para un público diverso que abarca desde fanáticos 
+                    apasionados del baloncesto hasta analistas y equipos de la NBA. Personas interesadas en explorar 
+                    datos y estadísticas de la NBA, identificar tendencias y tomar decisiones informadas en el ámbito del baloncesto encontrarán valor en esta 
+                    herramienta.</p>
             </div>
             <div class="response">
                 <h4>Uso de la herramienta</h4>
                 <!-- Puedes agregar los P que sean necesarios -->
                 <h4>Respuesta:</h4>
-                <p>Modifica solo este texto (no el de arriba) para poner tu respuesta</p>
+                <p>Uso buscado: El propósito principal de la herramienta es brindar a los usuarios la capacidad de acceder y analizar datos estadísticos detallados 
+                    de la NBA. Los usuarios pueden utilizarla para realizar un seguimiento de las actuaciones de jugadores y equipos, identificar patrones, evaluar 
+                    el desempeño y respaldar la toma de decisiones estratégicas en el baloncesto, ya sea para apoyar su equipo favorito o con fines analíticos más profundos.</p>
             </div>
 
         </div>
@@ -61,13 +72,71 @@
                 <h4>Tipos de datos a utilizar en el proyecto</h4>
                 <!-- Puedes agregar los P que sean necesarios -->
                 <h4>Respuesta:</h4>
-                <p>Modifica solo este texto (no el de arriba) para poner tu respuesta</p>
+                    <p>Datos de las Temporadas 2006-07 a 2023-24</p>
+                    <ul>
+                        <li>Ítem: Datos por equipo según la temporada.</li>
+                        <li>Atributo: Nombre del equipo, temporada, cantidad de victorias, cantidad de derrotas, link a la imagen.</li>
+                        <li>Enlace: Nombre del equipo</li>
+                    </ul>
+
+                    <p>Datos de los Jugadores</p>
+                    <ul>
+                        <li>Ítem: Datos de los jugadores desde las temporadas 2006-07 hasta 2023-24</li>
+                        <li>Atributo: Nombre del jugador, ha ganado MVP, promedio de puntos por partido, porcentaje de conversión de tiros libres por partido, porcentaje de conversión de tiros de campo por partido, porcentaje de conversión de tiros libres por partido, link a la imagen del jugador.</li>
+                        <li>Enlace: No hay enlace.</li>
+                    </ul>
+
+                    <p>Datos del Palmarés de los Equipos</p>
+                    <ul>
+                        <li>Ítem: Datos de la cantidad de campeonatos y subcampeonatos de los equipos.</li>
+                        <li>Atributo: Nombre del equipo, cantidad de campeonatos, cantidad de subcampeonatos, estadio, ciudad, link a la imagen.</li>
+                        <li>Enlace: Nombre del equipo.</li>
+                    </ul>
+
+                    <p>Datos de la Conferencia de los Equipos</p>
+                    <ul>
+                        <li>Ítem: Datos de los equipos, con su conferencia.</li>
+                        <li>Atributo: Nombre del equipo, conferencia, coordenadas del estadio.</li>
+                        <li>Enlace: Nombre del equipo.</li>
+                    </ul>
             </div>
             <div class="response">
                 <h4>Tipos de atributos presente en los datos</h4>
                 <!-- Puedes agregar los P que sean necesarios -->
                 <h4>Respuesta:</h4>
-                <p>Modifica solo este texto (no el de arriba) para poner tu respuesta</p>
+                <p>Datos de las Temporadas</p>
+                <ul>
+                    <li>Nombre del equipo: Categórico</li>
+                    <li>Temporada: Categórico</li>
+                    <li>Cantidad de victorias: Cuantitativo</li>
+                    <li>Cantidad de derrotas: Cuantitativo</li>
+                </ul>
+
+                <p>Datos de los Jugadores</p>
+                <ul>
+                    <li>Nombre del jugador: Categórico</li>
+                    <li>Ha ganado MVP: Categórico (binario: Sí/No)</li>
+                    <li>Promedio de puntos por partido: Cuantitativo</li>
+                    <li>Porcentaje de conversión de tiros libres por partido: Cuantitativo</li>
+                    <li>Porcentaje de conversión de tiros de campo por partido: Cuantitativo</li>
+                    <li>Porcentaje de conversión de tiros libres por partido: Cuantitativo</li>
+                </ul>
+
+                <p>Datos del Palmarés de los Equipos</p>
+                <ul>
+                    <li>Nombre del equipo: Categórico</li>
+                    <li>Cantidad de campeonatos: Cuantitativo</li>
+                    <li>Cantidad de subcampeonatos: Cuantitativo</li>
+                    <li>Estadio: Categórico</li>
+                    <li>Ciudad: Categórico</li>
+                </ul>
+
+                <p>Datos de la Conferencia de los Equipos</p>
+                <ul>
+                    <li>Nombre del equipo: Categórico</li>
+                    <li>Conferencia: Categórico</li>
+                    <li>Coordenadas del estadio: Cuantitativo (geoespacial)</li>
+                </ul>
             </div>
         </div>
 
@@ -83,9 +152,14 @@
                 </p>
 
                 <!-- Puedes agregar los P que sean necesarios -->
-                <h4>Acción: [una palabra]</h4>
-                <h4>Objetivo: [una palabra]</h4>
-                <p>Justificar la acción-objetivo con el dominio presentado: </p>
+                <h4>Acción: Visualizar</h4>
+                <h4>Objetivo: Distribución</h4>
+                <h4>Justificar la acción-objetivo con el dominio presentado: </h4>
+                La acción de "visualizar" se refiere a presentar datos de manera efectiva. El objetivo es "mostrar ubicación y estadísticas" 
+                ya que la visualización de mapa de puntos permite a los usuarios ubicar geográficamente los equipos de la NBA y obtener estadísticas 
+                al hacer hover. Esto se justifica al proporcionar una representación visual clara de la ubicación de los equipos y enriquecer la experiencia 
+                del usuario al mostrar estadísticas relevantes al interactuar con los equipos en el mapa.
+
             </div>
             <div class="response">
                 <h4>Tarea 2 (acción + objetivo) + justificación según el dominio presentado</h4>
@@ -97,9 +171,14 @@
                 </p>
 
                 <!-- Puedes agregar los P que sean necesarios -->
-                <h4>Acción: [una palabra]</h4>
-                <h4>Objetivo: [una palabra]</h4>
-                <p>Justificar la acción-objetivo con el dominio presentado: </p>
+                <h4>Acción: Visualizar</h4>
+                <h4>Objetivo: Proporción y Distribución</h4>
+                <h4>Justificar la acción-objetivo con el dominio presentado: </h4>
+                La acción de "visualizar" se refiere a presentar datos de manera efectiva. El objetivo es "mostrar distribución 
+                y proporción" ya que la visualización de barras agrupadas permite a los usuarios ver cómo se distribuyen las victorias 
+                y derrotas por temporada y conferencia, así como la proporción de campeonatos y subcampeonatos para los equipos. Esto se 
+                justifica al proporcionar una representación clara y comparativa de los datos, lo que permite a los usuarios analizar la distribución 
+                y proporción de las estadísticas de la NBA de manera eficiente.
             </div>
             <div class="response">
                 <h4>Tarea 3 (acción + objetivo) + justificación según el dominio presentado</h4>
@@ -111,9 +190,13 @@
                 </p>
 
                 <!-- Puedes agregar los P que sean necesarios -->
-                <h4>Acción: [una palabra]</h4>
-                <h4>Objetivo: [una palabra]</h4>
-                <p>Justificar la acción-objetivo con el dominio presentado: </p>
+                <h4>Acción: Explorar</h4>
+                <h4>Objetivo: Tendencias.</h4>
+                <h4>Justificar la acción-objetivo con el dominio presentado: </h4>
+                La acción de "explorar" se refiere a navegar por la visualización para conocer datos detallados. El objetivo principal 
+                es "identificar tendencias", ya que los usuarios buscan descubrir patrones o tendencias en las estadísticas de los jugadores 
+                de la NBA. Esto se justifica al proporcionar una visualización interactiva que facilita la exploración y ayuda a los usuarios 
+                a identificar de manera eficiente las tendencias en los datos, como el rendimiento de los jugadores en diferentes temporadas.
             </div>
         </div>
 
@@ -123,25 +206,27 @@
                 <h4>Decisiones de diseño relacionadas a la primera tarea visual</h4>
                 <!-- Puedes agregar los P que sean necesarios -->
                 <h4>Respuesta:</h4>
-                <p>Modifica solo este texto (no el de arriba) para poner tu respuesta</p>
+                <p>En la primera visualización, se utiliza un mapa de puntos para representar la ubicación geográfica de los equipos de la NBA. Esta elección de codificación visual permite una representación intuitiva de la información geoespacial. Además, se utiliza la interacción de hover para mostrar estadísticas relevantes de los equipos, lo que enriquece la experiencia del usuario al proporcionar detalles adicionales. La capacidad de hacer zoom agrega funcionalidad y contexto. Estas elecciones se justifican al brindar una presentación efectiva de la ubicación de los equipos y sus estadísticas, mejorando la comprensión y la exploración de los datos. Además, las interacciones afectan a la segunda visualización al seleccionar equipos, lo que impacta en el palmarés.</p>
             </div>
             <div class="response">
                 <h4>Decisiones de diseño relacionadas a la segunda tarea visual</h4>
                 <!-- Puedes agregar los P que sean necesarios -->
                 <h4>Respuesta:</h4>
-                <p>Modifica solo este texto (no el de arriba) para poner tu respuesta</p>
+                <p>
+                    
+La segunda visualización utiliza gráficos de barras agrupadas para representar las estadísticas de los equipos y su palmarés. Estos gráficos son dinámicos y cambian según la selección de la conferencia y la temporada a través de dos selectores. Además, se incorpora un botón que permite alternar entre la visualización de estadísticas por temporada y el palmarés de los equipos. Esto proporciona a los usuarios un mayor control sobre los datos que desean explorar, mejorando la interactividad y la capacidad de identificación de información relevante en la visualización.</p>
             </div>
             <div class="response">
                 <h4>Decisiones de diseño relacionadas a la tercera tarea visual</h4>
                 <!-- Puedes agregar los P que sean necesarios -->
                 <h4>Respuesta:</h4>
-                <p>Modifica solo este texto (no el de arriba) para poner tu respuesta</p>
+                <p>Para nuestra tercera visualización, queríamos mostrar a los jugadores y sus estadísticas y compararlos con otros jugadores de una forma interesante. Terminamos eligiendo hacer un gráfico de burbujas, el cual muestra a los 25 mejores jugadores de cada área seleccionada y los compara entre sí. Se comparan mediante el tamaño de las burbujas; mientras más grande la burbuja, mejor es el jugador en esa área. También se puede agarrar a cada jugador y arrastrarlo a lo largo de la visualización, ya sea para comparar el tamaño con otros jugadores o para ordenarlos a preferencia de uno. Hay 2 maneras de filtrar a los jugadores. La primera es ver si los jugadores tienen un MVP desde el 2006 o si no lo tienen, y la segunda es en base a los puntos por partido, porcentaje de triples por partido, porcentaje de tiros de campo por partido y porcentaje de tiros libres por partido, todas estas estadísticas medidas desde el 2006 al 2023. Los jugadores que han ganado un MVP tienen un anillo dorado alrededor de sus burbujas para así ver cómo se comparan con jugadores que no han ganado un MVP; así se puede apreciar que los jugadores con MVP suelen destacar en varias áreas o bastante en una área. Además del gráfico de burbujas, hay un cuadrado debajo de este que muestra información adicional del jugador y sus estadísticas, la cual se muestra cuando uno hace clic en una burbuja de un jugador.</p>
             </div>
         </div>
 
         <div class="case">
             <h3>
-                <a href="#">Enlace para acceder a la visualización</a>
+                <a href="index.html">Enlace para acceder a la visualización</a>
             </h3>
         </div>
 

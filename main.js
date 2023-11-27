@@ -120,7 +120,7 @@ d3.json('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/g
     .attr('d', path)
     .style('fill', 'none')
     .style('stroke', 'white')
-    .filter(x => x.properties.name == 'Alaska' || x.properties.name == 'Hawaii' || x.properties.name == 'Virginia') //Se excluyen estos 2 estados ya que no tienen equipos y no colaboran al mapa
+    .filter(x => x.properties.name == 'Alaska' || x.properties.name == 'Hawaii' || x.properties.name == 'Virginia') //Se excluyen estos 3 estados ya que no tienen equipos y no colaboran al mapa
     .style('visibility', 'hidden');
 
   d3.json('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/arenas.geojson').then(function (geo_teams) {
@@ -188,12 +188,6 @@ d3.json('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/g
       .data(geo_teams.features)
       .attr('opacity', d => equipos_seleccionados.has(d.properties.team) ? 1 : 0.2);
   }
-
-
-
-
-
-
 
 
 
@@ -269,8 +263,6 @@ d3.json('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/g
 
     equipos_seleccionados.clear();
 
-    // update_vis_2(false, equipos_seleccionados);
-
 
     update_vis_2(false, equipos_seleccionados);
   }
@@ -305,51 +297,45 @@ const g = SVG2.append('g')
 
 const tooltip2 = d3.select("#tooltip2");
 
-// // Carga de datos
-// const data_conferencia = d3.json('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/arenas.geojson');
-// const data_palmares = d3.dsv(';', 'https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PALMARES_NBA_NUEVO_.csv');
-// const data_season = d3.csv('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/teams_nba.csv');
-
-// function parseo_conferencia(d) {
-//   return {
-//     team: d.properties.team,
-//     conference: d.properties.conference,
-//   };
-// }
-
-// function parseo_palmares(d) {
-//   return {
-//     Equipo: d.Equipo,
-//     Campeonatos: +d.Campeonatos,
-//     Subcampeonatos: +d.Subcampeonatos,
-//     Titulos: d.Títulos,
-//     Image: d.Image,
-//   }
-// }
-
-// function parseo_season(d) {
-//   return {
-//     Team: d.Nombre,
-//     Season: d.Temporada,
-//     Victorias: +d.Victorias,
-//     Derrotas: +d.Derrotas,
-//     Image: d.Image,
-//   }
-// }
 
 
+function crear_ejes(g, height) {
 
-
-
-
-// Promise.all([data_conferencia, data_palmares, data_season]).then(function(data) {
-//   const conferencia = data[0];
-//   const palmares = data[1];
-//   const season = data[2];
-
-//   const conferenciasMap = conferencia.features.map(parseo_conferencia);
-//   const palmaresMap = palmares.map(parseo_palmares);
-//   const seasonMap = season.map(parseo_season);
+      // Agregamos los ejes
+      g.selectAll('.axis').remove();
+      g.append('g')
+        .attr('class', 'axis')
+        .attr('transform', `translate(0, ${height})`)
+        .call(d3.axisBottom(x0))
+        .selectAll('text')
+        .style('text-anchor', 'end')
+        .attr('dx', '-.8em')
+        .attr('dy', '-.55em')
+        .attr('transform', 'rotate(-45)')
+        .attr('font-size', '12px')
+        .attr('fill', 'white');
+  
+      g.append('g')
+        .attr('class', 'axis')
+        .call(d3.axisLeft(y).ticks(null, 's'))
+        .selectAll('text')
+        .attr('font-size', '12px')
+        .attr('fill', 'white')
+        .append('text')
+        .attr('x', 2)
+        .attr('y', y(y.ticks().pop()) + 0.5)
+        .attr('dy', '0.32em')
+        .attr('fill', '#000')
+        .attr('font-weight', 'bold')
+        .attr('text-anchor', 'start')
+        .attr('font-size', '12px')
+        .text('Victorias')
+        .attr('fill', 'white');
+  
+      // Cambiamos el color de los ejes
+      g.selectAll('.axis').selectAll('path').attr('stroke', 'white');
+      g.selectAll('.axis').selectAll('line').attr('stroke', 'white');
+}
 
   // Función para ver si se cambió el filtro de conferencia
   d3.select('#conferencia').on('change', function() {
@@ -397,41 +383,6 @@ const tooltip2 = d3.select("#tooltip2");
       y.domain([0, d3.max(filtered_palmares, d => d3.max([d.Campeonatos, d.Subcampeonatos]))]).nice();
     }
 
-    // Agregamos los ejes
-    g.selectAll('.axis').remove();
-    g.append('g')
-      .attr('class', 'axis')
-      .attr('transform', `translate(0, ${height})`)
-      .call(d3.axisBottom(x0))
-      .selectAll('text')
-      .style('text-anchor', 'end')
-      .attr('dx', '-.8em')
-      .attr('dy', '-.55em')
-      .attr('transform', 'rotate(-45)')
-      .attr('font-size', '12px')
-      .attr('fill', 'white');
-
-    g.append('g')
-      .attr('class', 'axis')
-      .call(d3.axisLeft(y).ticks(null, 's'))
-      .selectAll('text')
-      .attr('font-size', '12px')
-      .attr('fill', 'white')
-      .append('text')
-      .attr('x', 2)
-      .attr('y', y(y.ticks().pop()) + 0.5)
-      .attr('dy', '0.32em')
-      .attr('fill', '#000')
-      .attr('font-weight', 'bold')
-      .attr('text-anchor', 'start')
-      .attr('font-size', '12px')
-      .text('Victorias')
-      .attr('fill', 'white');
-
-    // Cambiamos el color de los ejes
-    g.selectAll('.axis').selectAll('path').attr('stroke', 'white');
-    g.selectAll('.axis').selectAll('line').attr('stroke', 'white');
-
     // Definimos la data
     const data = bool_conferencia ? equipos_comunes : filtered_palmares;
 
@@ -444,30 +395,71 @@ const tooltip2 = d3.select("#tooltip2");
         .append('g')
         .attr('class', 'bar')
         .attr('transform', d => `translate(${x0(d.Team)}, 0)`);
-    
-      bars.selectAll('rect')
-        .data(d => ['Victorias', 'Derrotas'].map(key => ({team: d.Team,  image: d.Image, key, value: d[key]})))
-        .enter()
+        //.merge(g.selectAll('g.bar'));
+
+      g.selectAll('.bar')
+        .filter(d => !data.map(item => item.Team).includes(d.Team)) 
+        .selectAll('rect')
+        .transition()
+        .duration(500)
+        .attr('height', 0)
+        .remove();
+
+      const rect = bars.selectAll('rect')
+        .data(d => ['Victorias', 'Derrotas'].map(key => ({team: d.Team,  image: d.Image, key, value: d[key]})));
+      
+      rect.exit()
+        .transition()
+        .duration(500)
+        .attr('y', height)
+        .attr('height', 0)
+        .remove();
+  
+      rect.enter()
         .append('rect')
         .attr('x', d => x1(d.key))
-        .attr('y', d => y(d.value))
+        .attr('y', height)
         .attr('width', x1.bandwidth())
         .attr('height', d => height - y(d.value))
         .attr('fill', d => d.key === 'Victorias' ? '#003da5' : '#ce1141')
+        .merge(rect)
+        .transition()
+        .duration(500)
+        .attr('y', d => y(d.value))  // Mover la barra hacia arriba
+        .attr('height', d => height - y(d.value))
+
+        g.append('rect')
+        .attr('x', 0)
+        .attr('y', 735)
+        .attr('width', 1200)
+        .attr('height', 100)
+        .attr('fill', '#021218');
+      
+      //Aca creamos los ejes con la funcion definida anteriormente. Los creamos despues de las barras
+      // ya que queremos que se situen adelante de las barras.
+      crear_ejes(g, height);
+
+
+      g.selectAll('rect')
         .on('mouseover', function(event, d) {
-          tooltip2.html(`<img src="${d.image}" alt="Imagen de ${d.team}" style="width:50px;height:auto;"><br>Equipo: ${d.team} <br> ${d.key}: ${d.value}`)
-                .style('left', (event.pageX + 10) + 'px')
-                .style('top', (event.pageY -20) + 'px');
-          tooltip2.style('opacity', 1);
+          //Este if esta para verificar que "d" exista ya que esta el caso donde hay 1 rectangulo sin data que es el rectangulo
+          //extra agregado para tapar las barras, el cual despues tira error de undefined.
+          if (d) {
+            tooltip2.html(`<img src="${d.image}" alt="Imagen de ${d.team}" style="width:50px;height:auto;"><br>Equipo: ${d.team} <br> ${d.key}: ${d.value}`)
+                  .style('left', (event.pageX + 10) + 'px')
+                  .style('top', (event.pageY -20) + 'px');
+            tooltip2.style('opacity', 1);
+          }
         })
         .on('mouseout', function() {
           tooltip2.style('opacity', 0);
         });
 
+
       g.selectAll('.axis text')
         .on('mouseover', function(event, d) {
           const dataPoint = x0.domain().find(x => x === d);
-          const logo = seasonMap.find(x => x.Team === dataPoint);
+          const logo = filtered_season.find(x => x.Team === dataPoint);
           tooltip2.html(`<img src="${logo.Image}" alt="Imagen de ${d}" style="width:50px;height:auto;"><br>Equipo: ${d} <br> Temporada: ${selected_season} <br> ${bool_conferencia ? 'Victorias' : 'Campeonatos'}: ${bool_conferencia ? logo.Victorias : logo.Campeonatos} <br> ${bool_conferencia ? 'Derrotas' : 'Subcampeonatos'}: ${bool_conferencia ? logo.Derrotas : logo.Subcampeonatos}`)
                 .style('left', (event.pageX + 10) + 'px')
                 .style('top', (event.pageY -20) + 'px');
@@ -518,12 +510,16 @@ const tooltip2 = d3.select("#tooltip2");
         .attr('stroke', d => equipos_seleccionados.has(d.Equipo) ? 'white' : 'none')
         .attr('stroke-width', d => equipos_seleccionados.has(d.Equipo) ? '2.5px' : '1.0px');
 
-        
+      //Aca creamos los ejes con la funcion definida anteriormente. Los creamos despues de las barras
+      // ya que queremos que se situen adelante de las barras.
+      crear_ejes(g, height);
 
       g.selectAll('.axis text')
         .on('mouseover', function(event, d) {
+
           const dataPoint = x0.domain().find(x => x === d);
-          const logo = palmaresMap.find(x => x.Equipo === dataPoint);
+
+          const logo = filtered_palmares.find(x => x.Equipo.split(' ').pop() === d.split(' ').pop())
           tooltip2.html(`<img src="${logo.Image}" alt="Imagen de ${d}" style="width:50px;height:auto;"><br>Equipo: ${d} <br> ${bool_conferencia ? 'Victorias' : 'Campeonatos'}: ${bool_conferencia ? logo.Victorias : logo.Campeonatos} <br> ${bool_conferencia ? 'Derrotas' : 'Subcampeonatos'}: ${bool_conferencia ? logo.Derrotas : logo.Subcampeonatos}`)
                 .style('left', (event.pageX + 10) + 'px')
                 .style('top', (event.pageY -20) + 'px');
@@ -533,7 +529,8 @@ const tooltip2 = d3.select("#tooltip2");
         .on('mouseout', function() {
           tooltip2.style('opacity', 0);
         });
-    }
+
+    } 
 
     // Agregamos la leyenda
     g.selectAll('.legend').remove();
@@ -676,8 +673,6 @@ function limpiar_vis_32() {
 }
 
 
-  // const sorted_pts = jugadores.slice().sort((a, b) => b.PTS - a.PTS);
-  // const filtered_jugadores = sorted_pts.slice(0, 20);
 
   // Función para preprocesar los datos según el filtro
   function preprocesar_vis_3(filtro) {
@@ -755,7 +750,7 @@ function limpiar_vis_32() {
 
     // console.log(variable);
 
-    // Nos quedamos con los 20 primeros
+    // Nos quedamos con los 25 primeros
     filtered_jugadores = filtered_jugadores.slice(0, 25);
 
 
@@ -839,14 +834,7 @@ function limpiar_vis_32() {
             .attr('width', d => escala(d[variable])*3/2)
             .attr('height', d => escala(d[variable])*3/2)
             .attr('y', d => -escala(d[variable])*3/4)
-            .attr('x', (d, i) => {
-              // console.log(d.Player); 
-              // console.log(`La variable es ${variable}`)
-              // console.log(`El dato es ${d[variable]}`)
-              // console.log(`La escala a usar es ${obtenerEscala(variable)}`)
-              // console.log(escala(d[variable]))
-              return -escala(d[variable])*3/4;
-            })
+            .attr('x', d => -escala(d[variable])*3/4)
             .on('click', function(event, d) {
               // console.log(d);
               actualizar_vis_32(d);
@@ -910,25 +898,7 @@ function limpiar_vis_32() {
 
     }
 
-  // Creamos un zoom para la visualización
-    const zoom = d3.zoom().scaleExtent([0, 2]).on('zoom', zoomed);
-
-    SVG3.call(zoom);
-
-    function zoomed(event) {
-      SVG3.selectAll('circle')
-        .attr('transform', event.transform);
-
-      SVG3.selectAll('image')
-        .attr('transform', event.transform);
-
-      SVG3.selectAll('text')
-        .attr('transform', event.transform);
-    }
-
   }
-
-  // create_vis_3_aux(orden, filtro);
 
   }
 

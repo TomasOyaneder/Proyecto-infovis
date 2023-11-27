@@ -1,6 +1,5 @@
 body {
     margin: 0 auto;
-    /* Puedes cambiar el color de fondo (background-color) si lo deseas */
     background-color: lightblue;
     max-width: 80%;
     min-width: 500px;
@@ -8,7 +7,6 @@ body {
 }
 
 .case h2 {
-    /* Puedes cambiar el color de fondo (background-color) si lo deseas */
     background-color: #e0a45e;
     padding: 10px;
     margin: 10px;

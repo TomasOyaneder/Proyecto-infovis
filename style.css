@@ -2,13 +2,14 @@ body {
     margin: 0 auto;
     /* Puedes cambiar el color de fondo (background-color) si lo deseas */
     /* background-color: rgb(15, 15, 15); */
-    background-image: url("https://ichef.bbci.co.uk/images/ic/480x270/p0f3k3nz.jpg");
-    background-repeat: repeat;
-    /* background-position: center;
-    background-size: 50%;
-    background-attachment: fixed; */
+    /*background-image: url("https://ichef.bbci.co.uk/images/ic/480x270/p0f3k3nz.jpg");*/
+    background-image: url('https://t4.ftcdn.net/jpg/01/36/56/49/360_F_136564967_2F3S1E04Wb4durBhjwyDaLefdeo6udnn.jpg');
+    /*background-repeat: repeat;*/
+    background-position: center;
+    background-size: 100%;
+    background-attachment: fixed; 
     /* background-color: rgb(15, 15, 15); */
-    background-color: rgb(255, 255, 255);
+    background-color: #fffff3;
     color: rgb(0, 0, 0);
     font-size: 20px;
     max-width: 1300px;
