@@ -156,7 +156,10 @@ d3.json('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/g
         circle.classed('selected', false);
         // Le sacamos el contorno al equipo
         circle.attr('stroke', 'none');
+        circle.attr('stroke-width', '1.0px');
+        // circle.attr('opacity', 0.2);
         // Llamamos a la función para actualizar la visualización 2
+        opacar();
         update_vis_2(false, equipos_seleccionados);
       }
 
@@ -167,11 +170,25 @@ d3.json('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/g
         circle.attr('stroke', 'white');
         circle.attr('stroke-width', '2.5px');
         // Llamamos a la función para actualizar la visualización 2
+        opacar();
         update_vis_2(false, equipos_seleccionados);
       }
 
       console.log(equipos_seleccionados);
     });
+
+
+  // Función para opacar los equipos que no estén en equipos_seleccionados
+  function opacar() {
+    SVG1.selectAll('circle')
+      .data(geo_teams.features)
+      .attr('opacity', d => equipos_seleccionados.has(d.properties.team) ? 1 : 0.2);
+
+    SVG1.selectAll('text')
+      .data(geo_teams.features)
+      .attr('opacity', d => equipos_seleccionados.has(d.properties.team) ? 1 : 0.2);
+  }
+
 
 
 
@@ -199,12 +216,12 @@ d3.json('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/g
     SVG1.selectAll('circle')
       .data(geo_teams.features)
       .attr('stroke', d => d.properties.conference === 'Eastern' ? 'white' : 'none')
-      .attr('stroke-width', d => d.properties.conference === 'Eastern' ? '2.5px' : '1.0px');
+      .attr('stroke-width', d => d.properties.conference === 'Eastern' ? '2.5px' : '1.0px')
+      .attr('opacity', d => d.properties.conference === 'Eastern' ? 1 : 0.2);
 
     SVG1.selectAll('text')
       .data(geo_teams.features)
-      .attr('stroke', d => d.properties.conference === 'Eastern' ? 'white' : 'none')
-      .attr('stroke-width', d => d.properties.conference === 'Eastern' ? '1.5px' : '1.0px');
+      .attr('opacity', d => d.properties.conference === 'Eastern' ? 1 : 0.2);
 
     equipos_seleccionados.clear();
     // Rellenamos equipos_seleccionados con los equipos de la conferencia Este
@@ -216,48 +233,44 @@ d3.json('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/g
   d3.select('#Western').on('click', function() {
     console.log('Western');
 
-    // Rellenamos los equipos de la conferencia Oeste
+    // Rellenamos los equipos de la conferencia Oeste y opacamos los de la conferencia Este
     SVG1.selectAll('circle')
       .data(geo_teams.features)
       .attr('stroke', d => d.properties.conference === 'Western' ? 'white' : 'none')
-      .attr('stroke-width', d => d.properties.conference === 'Western' ? '2.5px' : '1.0px');
+      .attr('stroke-width', d => d.properties.conference === 'Western' ? '2.5px' : '1.0px')
+      .attr('opacity', d => d.properties.conference === 'Western' ? 1 : 0.2);
 
     SVG1.selectAll('text')
       .data(geo_teams.features)
-      .attr('stroke', d => d.properties.conference === 'Western' ? 'white' : 'none')
-      .attr('stroke-width', d => d.properties.conference === 'Western' ? '1.5px' : '1.0px');
+      .attr('opacity', d => d.properties.conference === 'Western' ? 1 : 0.2);
 
     equipos_seleccionados.clear();
     // Rellenamos equipos_seleccionados con los equipos de la conferencia Oeste
     equipos_seleccionados = new Set(geo_teams.features.filter(d => d.properties.conference === 'Western').map(d => d.properties.team));
+
+    update_vis_2(false, equipos_seleccionados);
 
   });
 
   d3.select('#reset').on('click', function() {
     console.log('Reset');
 
-    // No se rellena ningún equipo
+    // Se cambia la opacidad de todos los equipos a 1
     SVG1.selectAll('circle')
       .data(geo_teams.features)
-      .attr('stroke', 'none');
+      .attr('stroke', 'none')
+      .attr('stroke-width', '1.0px')
+      .attr('opacity', 1);
 
     SVG1.selectAll('text')
       .data(geo_teams.features)
-      .attr('stroke', 'none');
+      .attr('stroke', 'none')
+      .attr('opacity', 1);
 
-  })
-  .on('click', function() {
-    console.log('Reset');
     equipos_seleccionados.clear();
-    SVG1.selectAll('circle')
-      .data(geo_teams.features)
-      .classed('selected', false)
-      .attr('stroke', 'none');
 
-    SVG1.selectAll('text')
-      .data(geo_teams.features)
-      .classed('selected', false)
-      .attr('stroke', 'none');
+    // update_vis_2(false, equipos_seleccionados);
+
 
     update_vis_2(false, equipos_seleccionados);
   }
@@ -818,6 +831,9 @@ function limpiar_vis_32() {
             });
 
 
+
+
+
           circles.append('image')
             .attr('href', d => d.Image)
             .attr('width', d => escala(d[variable])*3/2)
@@ -834,7 +850,8 @@ function limpiar_vis_32() {
             .on('click', function(event, d) {
               // console.log(d);
               actualizar_vis_32(d);
-            })
+            });
+
 
 
 
