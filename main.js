@@ -125,7 +125,7 @@ d3.json('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/g
 SVG2.attr('width', 1200).attr('height', 900);
 
 // Definimos las dimensiones del gráfico
-const margin = {top: 20, right: 20, bottom: 30, left: 40};
+const margin = {top: 75, right: 20, bottom: 90, left: 40};
 const width = +SVG2.attr('width') - margin.left - margin.right;
 const height = +SVG2.attr('height') - margin.top - margin.bottom;
 
@@ -168,6 +168,7 @@ function parseo_season(d) {
     Season: d.Temporada,
     Victorias: +d.Victorias,
     Derrotas: +d.Derrotas,
+    Image: d.Image,
   }
 }
 
@@ -204,11 +205,18 @@ Promise.all([data_conferencia, data_palmares, data_season]).then(function(data) 
     const filtered_palmares = palmaresMap;
     const filtered_season = seasonMap.filter(x => x.Season === selected_season);
 
-     //console.log("Palmares filtrados: ", filtered_palmares);
+    // Filtramos los equipos que se encuentren en filtered_conferencia y filtered_season
+    const equipos_comunes = filtered_season.filter(season =>
+      filtered_conferencia.some(conferencia =>
+        season.Team.includes(conferencia.team) || conferencia.team.includes(season.Team)
+      )
+    );
+
+    console.log(equipos_comunes);
 
     // Definimos las escalas
     if (bool_conferencia) {
-      x0.domain(filtered_conferencia.map(d => d.team));
+      x0.domain(equipos_comunes.map(d => d.Team));
       x1.domain(['Victorias', 'Derrotas']).rangeRound([0, x0.bandwidth()]);
       y.domain([0, d3.max(filtered_season, d => d3.max([d.Victorias, d.Derrotas]))]).nice();
     }
@@ -224,7 +232,12 @@ Promise.all([data_conferencia, data_palmares, data_season]).then(function(data) 
     g.append('g')
       .attr('class', 'axis')
       .attr('transform', `translate(0, ${height})`)
-      .call(d3.axisBottom(x0));
+      .call(d3.axisBottom(x0))
+      .selectAll('text')
+      .style('text-anchor', 'end')
+      .attr('dx', '-.8em')
+      .attr('dy', '-.55em')
+      .attr('transform', 'rotate(-45)');
 
     g.append('g')
       .attr('class', 'axis')
@@ -237,47 +250,73 @@ Promise.all([data_conferencia, data_palmares, data_season]).then(function(data) 
       .attr('font-weight', 'bold')
       .attr('text-anchor', 'start');
 
+    // Definimos la data
+    const data = bool_conferencia ? equipos_comunes : filtered_palmares;
+
     // Agregamos las barras
-    g.selectAll('.bar').remove();
+    if (bool_conferencia) {
+      g.selectAll('.bar').remove();
+      const bars = g.selectAll('g.bar')
+        .data(data)
+        .enter()
+        .append('g')
+        .attr('class', 'bar')
+        .attr('transform', d => `translate(${x0(d.Team)}, 0)`);
+    
+      bars.selectAll('rect')
+        .data(d => ['Victorias', 'Derrotas'].map(key => ({key, value: d[key]})))
+        .enter()
+        .append('rect')
+        .attr('x', d => x1(d.key))
+        .attr('y', d => y(d.value))
+        .attr('width', x1.bandwidth())
+        .attr('height', d => height - y(d.value))
+        .attr('fill', d => d.key === 'Victorias' ? '#003da5' : '#ce1141')
+        .on('mouseover', function(event, d) {
+          tooltip2.html(`Equipo: ${d.Team} <br> ${d.key}: ${d.value}`)
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY -20) + 'px');
+          tooltip2.style('opacity', 1);
+        })
+        .on('mouseout', function() {
+          tooltip2.style('opacity', 0);
+        });
 
-     console.log("Datos seleccionados: ", bool_conferencia ? filtered_season : filtered_palmares);
-    const bars = g.selectAll('g')
-      .data(bool_conferencia ? filtered_season : filtered_palmares)
-      .enter()
-      .append('g')
-      .attr('transform', d => `translate(${bool_conferencia ? x0(d.Team) : x0(d.Equipo)}, 0)`);
+    }
 
-    console.log(bool_conferencia);
+    else {
+      console.log(data);
+      g.selectAll('.bar').remove();
+      const bars = g.selectAll('g.bar')
+        .data(data)
+        .enter()
+        .append('g')
+        .attr('class', 'bar')
+        .attr('transform', d => `translate(${x0(d.Equipo)}, 0)`);
 
-    bars.selectAll('rect')
-    .data(d => {
-      // Crear los datos para las barras
-      const barData = bool_conferencia ? 
-          [{key: 'Victorias', value: d.Victorias}, {key: 'Derrotas', value: d.Derrotas}] : 
-          [{key: 'Campeonatos', value: d.Campeonatos}, {key: 'Subcampeonatos', value: d.Subcampeonatos}];
+      bars.selectAll('rect')
+        .data(d => ['Campeonatos', 'Subcampeonatos'].map(key => ({key, value: d[key]})))
+        .enter()
+        .append('rect')
+        .attr('x', d => x1(d.key))
+        .attr('y', d => y(d.value))
+        .attr('width', x1.bandwidth())
+        .attr('height', d => height - y(d.value))
+        .attr('fill', d => d.key === 'Campeonatos' ? '#003da5' : '#ce1141')
+        //tooltip para palmares con el nombre del equipo, campeonatos y subcampeonatos y el logo
+        .on('mouseover', function(event, d) {
+          const logo = data.find(x => x.Equipo === d.Equipo);
+          tooltip2.html(`<object data="${logo.Image}" type="image/svg+xml"></object> <br> Equipo: ${d.Equipo} <br> ${d.key}: ${d.value}`)
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY -20) + 'px');
+          tooltip2.style('opacity', 1);
+        })
+        .on('mouseout', function() {
+          tooltip2.style('opacity', 0);
+        });
+    }
+    
 
-      // Imprimir los datos en la consola
-      console.log("Datos de la barra:", barData)
-
-      // Retornar los datos para usarlos en las barras
-      return barData;
-  })
-      .enter()
-      .append('rect')
-      .attr('x', d => x1(d.key))
-      .attr('y', d => y(d.value))
-      .attr('width', x1.bandwidth())
-      .attr('height', d => height - y(d.value))
-      .attr('fill', d => d.key === 'Victorias' || d.key === 'Campeonatos' ? '#003da5' : '#ce1141')
-      .on('mouseover', function(event, d) {
-        tooltip2.html(`${d.key}: ${d.value}`)
-              .style('left', (event.pageX + 10) + 'px')
-              .style('top', (event.pageY -20) + 'px');
-        tooltip2.style('opacity', 1);
-      })
-      .on('mouseout', function() {
-        tooltip2.style('opacity', 0);
-      });
 
     // Agregamos la leyenda
     g.selectAll('.legend').remove();
@@ -322,72 +361,163 @@ SVG3.attr('width', width3 ).attr('height', height3);
     
 d3.csv('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PLAYERS_NBA.csv').then(function (jugadores) {
 
+  // const sorted_pts = jugadores.slice().sort((a, b) => b.PTS - a.PTS);
+  // const filtered_jugadores = sorted_pts.slice(0, 20);
 
-  const sorted_pts = jugadores.slice().sort((a, b) => b.PTS - a.PTS);
-  const filtered_jugadores = sorted_pts.slice(0, 20);
+  // Función para preprocesar los datos según el filtro
+  function preprocesar_vis_3(filtro) {
+    // Cada vez que se cambie el filtro, se debe volver a preprocesar los datos
+    d3.select('#MVP').on('click', (event) => {
+      filtro = '0';
+      preprocesar_vis_3(filtro);
+    });
+
+    d3.select('#no-MVP').on('click', (event) => {
+      filtro = '1';
+      preprocesar_vis_3(filtro);
+    });
+
+    d3.select('#ALL').on('click', (event) => {
+      filtro = '2';
+      preprocesar_vis_3(filtro);
+    });
+
+
+    // Cada vez que cambia el selector de orden, se llama nuevamente a create_vis_3
+    // para que se actualice la visualización
+    d3.select('#order-by').on('change', (_) => {
+      let orden = document.getElementById('order-by').selectedOptions[0].value;
+      create_vis_3_aux(orden, filtro);
+    })
+
+    // Llamamos a la función para crear la visualización
+    let orden = document.getElementById('order-by').selectedOptions[0].value;
+    create_vis_3_aux(orden, filtro);
 
 
 
-  const simulation = d3.forceSimulation(filtered_jugadores)
-    .force('attractToCenterX', d3.forceX(width3 / 2).strength(0.05)) 
-    .force('attractToCenterY', d3.forceY(height3 / 2).strength(0.05))
-    .force('collision', d3.forceCollide(d => d.PTS*3).strength(0.5)) 
-    .on('tick', ticked);
 
 
-  const circles = SVG3.selectAll('.circle')
-    .data(filtered_jugadores)
-    .enter().append('g')
-    .attr('class', 'circle')
-    .call(drag(simulation));
 
-  circles.append('image')
-    .attr('href', d => d.Image)
-    .attr('width', d => d.PTS*3)
-    .attr('height', d => d.PTS*3)
-    .attr('x', d => -d.PTS*3)
-    .attr('y', d => -d.PTS*3);
-    //.attr('x', (d, i) => circulos_agregados.nodes()[i].getAttribute('cx') + d.PTS*5)
-    //.attr('y', (d, i) => circles_agregados.nodes()[i].getAttribute('cy') + d.PTS*5);
 
+
+  // Función para crear la visualización
+  function create_vis_3_aux(orden, filtro) {
+    let variable = 'PTS';
+    console.log(orden, filtro);
+    // Se filtran los datos según el filtro
+    let filtered_jugadores = jugadores;
+    if (filtro === '0') {
+      filtered_jugadores = jugadores.filter(x => x.MVP > 0);
+    }
+
+    else if (filtro === '1') {
+      filtered_jugadores = jugadores.filter(x => x.MVP == 0);
+    }
+
+    // Se ordenan los datos según el orden
+    if (orden === 'PTS') {
+      filtered_jugadores.sort((a, b) => b.PTS - a.PTS);
+      variable = 'PTS';
+    }
+
+    else if (orden === 'TRI') {
+      filtered_jugadores.sort((a, b) => b.TRI - a.TRI);
+      variable = 'TRI';
+    }
+
+    else if (orden === 'FG') {
+      filtered_jugadores.sort((a, b) => b.FG - a.FG);
+      variable = 'FG';
+    }
+
+    else {
+      filtered_jugadores.sort((a, b) => b.FT - a.FT);
+      variable = 'FT';
+    }
+
+    console.log(variable);
+
+    // Nos quedamos con los 20 primeros
+    filtered_jugadores = filtered_jugadores.slice(0, 20);
+
+    console.log(filtered_jugadores);
+
+    // Creamos la simulación según el orden
+    const simulation = d3.forceSimulation(filtered_jugadores)
+      .force('attractToCenterX', d3.forceX(width3 / 2).strength(0.05)) 
+      .force('attractToCenterY', d3.forceY(height3 / 2).strength(0.05))
+      .force('collision', d3.forceCollide(d => d[variable]*3).strength(0.5)) 
+      .on('tick', ticked);
+
+
+    const circles = SVG3.selectAll('.circle')
+      .data(filtered_jugadores)
+      .enter().append('g')
+      .attr('class', 'circle')
+      .call(drag(simulation));
+
+    // Si hay presencia de jugadores MVP, el contorno de su círculo es dorado
     circles.append('circle')
-    .attr('cx', Math.random()*(width3-200))
-    .attr('cy', Math.random()*(height3-100))
-    .attr('r', d => d.PTS*3);
+      .attr('r', d => d[variable]*3)
+      .style('stroke', d => d.MVP > 0 ? 'gold' : 'none');
+
+    // circles.append('circle')
+    //   .attr('r', d => d.PTS*3);
+
+    circles.append('image')
+      .attr('href', d => d.Image)
+      .attr('width', d => d[variable]*3)
+      .attr('height', d => d[variable]*3)
+      .attr('x', d => -d[variable]*3/2)
+      .attr('y', d => -d[variable]*3/2);
+      //.attr('x', (d, i) => circulos_agregados.nodes()[i].getAttribute('cx') + d.PTS*5)
+      //.attr('y', (d, i) => circles_agregados.nodes()[i].getAttribute('cy') + d.PTS*5);
 
 
-  function ticked() {
-    circles.attr('transform', d => `translate(${d.x},${d.y})`);
-      //.attr('cx', d => d.x)
-      //.attr('cy', d => d.y);
+    function ticked() {
+      circles.attr('transform', d => `translate(${d.x},${d.y})`);
+        //.attr('cx', d => d.x)
+        //.attr('cy', d => d.y);
+    }
+
+
+    function drag(simulation) {
+      function dragstarted(event, d) {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+      }
+
+      function dragged(event, d) {
+        d.fx = event.x;
+        d.fy = event.y;
+      }
+
+      function dragended(event, d) {
+        if (!event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+      }
+
+      return d3.drag()
+        .on('start', dragstarted)
+        .on('drag', dragged)
+        .on('end', dragended);
+
+    }
+
   }
 
+  // create_vis_3_aux(orden, filtro);
 
-  function drag(simulation) {
-    function dragstarted(event, d) {
-      if (!event.active) simulation.alphaTarget(0.3).restart();
-      d.fx = d.x;
-      d.fy = d.y;
-    }
-
-    function dragged(event, d) {
-      d.fx = event.x;
-      d.fy = event.y;
-    }
-
-    function dragended(event, d) {
-      if (!event.active) simulation.alphaTarget(0);
-      d.fx = null;
-      d.fy = null;
-    }
-
-    return d3.drag()
-      .on('start', dragstarted)
-      .on('drag', dragged)
-      .on('end', dragended);
   }
 
+  preprocesar_vis_3('2');
 
 });
+
+
+
 
 

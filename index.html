@@ -48,6 +48,8 @@
                     <option value="2006-07">2006-07</option>
                 </select>
             </div>
+
+            <div class="tooltip" id="tooltip2"></div>
         
             <h4>O seleccionar por palmarés</h4>
             <div>
@@ -60,15 +62,18 @@
         <div id="vis-3">
             <div>
                 <h5>Filtrar por categoria</h5>
-                <button id="showCat2">Gano MVP</button>
-                <button id="showCat1">No gano MVP</button>
+                <button id="MVP">Ganó MVP</button>
+                <button id="no-MVP">No ganó MVP</button>
+                <button id="ALL">Todos los jugadores</button>
             </div>
             <div>
                 <h5>Mostrar por:</h5>
-                <button id="filter-button">Mayores puntos por partido</button>
-                <button id="filter-reset">Mayor porcentaje de triples</button>
-                <button id="filter-reset">Mayor porcentaje de tiros de campo</button>
-                <button id="filter-reset">Mayor porcentaje de tiros libres</button>
+                <select id="order-by">
+                    <option value="PTS" selected>Promedio de puntos por partido</option>
+                    <option value="TRI">Porcentaje de conversión triples</option>
+                    <option value="FG">Porcentaje de conversión de faltas</option>
+                    <option value="FT">Porcentaje de conversión de tiros libres</option>
+                </select>
             </div>
 
             <!--<img src="https://cdn.nba.com/headshots/nba/latest/1040x760/2544.png" style="opacity:0.08">-->
