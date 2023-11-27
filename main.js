@@ -1,6 +1,7 @@
 const SVG1 = d3.select("#vis-1").append("svg")
 const SVG2 = d3.select("#vis-2").append("svg")
 const SVG3 = d3.select("#vis-3").append("svg")
+const SVG3_2 = d3.select("#vis-3").append("svg")
 
 
 const width1 = 960;
@@ -82,6 +83,8 @@ d3.json('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/g
   d3.json('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/arenas.geojson').then(function (geo_teams) {
     d3.dsv(';', 'https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PALMARES_NBA_NUEVO_.csv').then(function(teams) {
 
+    let equipos_seleccionados = new Set();
+
     SVG1.selectAll('circle')
     .data(geo_teams.features)
     .enter()
@@ -101,7 +104,41 @@ d3.json('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/g
     })
     .on('mouseout', function() {
       tooltip.style('opacity', 0);
+    })
+    .on('click', function(event, d) {
+      //console.log(d.properties.team);
+      const circle = d3.select(this);
+      const nombre = d.properties.team;
+
+      if (equipos_seleccionados.has(nombre)) {
+        equipos_seleccionados.delete(nombre);
+        circle.classed('selected', false);
+        // Le sacamos el contorno al equipo
+        circle.attr('stroke', 'none');
+        // Llamamos a la función para actualizar la visualización 2
+        update_vis_2(false, equipos_seleccionados);
+      }
+
+      else {
+        equipos_seleccionados.add(nombre);
+        circle.classed('selected', true);
+        // Le ponemos un contorno al equipo
+        circle.attr('stroke', 'white');
+        circle.attr('stroke-width', '2.5px');
+        // Llamamos a la función para actualizar la visualización 2
+        update_vis_2(false, equipos_seleccionados);
+      }
+
+      //console.log(equipos_seleccionados);
     });
+
+
+
+
+
+
+
+
 
   SVG1.selectAll('text')
     .data(geo_teams.features)
@@ -114,9 +151,57 @@ d3.json('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/g
     .attr('font-size', '12px')
     .style('fill', 'white');
 
-    });
+  d3.select('#Eastern').on('click', function() {
+    console.log('Eastern');
+
+    // Rellenamos el contorno de los estados de la conferencia Este
+    SVG1.selectAll('circle')
+      .data(geo_teams.features)
+      .attr('stroke', d => d.properties.conference === 'Eastern' ? 'white' : 'none')
+      .attr('stroke-width', d => d.properties.conference === 'Eastern' ? '2.5px' : '1.0px');
+
+    SVG1.selectAll('text')
+      .data(geo_teams.features)
+      .attr('stroke', d => d.properties.conference === 'Eastern' ? 'white' : 'none')
+      .attr('stroke-width', d => d.properties.conference === 'Eastern' ? '1.5px' : '1.0px');
   });
+
+  d3.select('#Western').on('click', function() {
+    console.log('Western');
+
+    // Rellenamos los equipos de la conferencia Oeste
+    SVG1.selectAll('circle')
+      .data(geo_teams.features)
+      .attr('stroke', d => d.properties.conference === 'Western' ? 'white' : 'none')
+      .attr('stroke-width', d => d.properties.conference === 'Western' ? '2.5px' : '1.0px');
+
+    SVG1.selectAll('text')
+      .data(geo_teams.features)
+      .attr('stroke', d => d.properties.conference === 'Western' ? 'white' : 'none')
+      .attr('stroke-width', d => d.properties.conference === 'Western' ? '1.5px' : '1.0px');
+
+  });
+
+  d3.select('#reset').on('click', function() {
+    console.log('Reset');
+
+    // No se rellena ningún equipo
+    SVG1.selectAll('circle')
+      .data(geo_teams.features)
+      .attr('stroke', 'none');
+
+    SVG1.selectAll('text')
+      .data(geo_teams.features)
+      .attr('stroke', 'none');
+
+  });
+
+  });
+
+  });
+
 });
+
 
 // Visualización 2 - Gráfico de barras agrupado
 // 2 filtros: Conferencia y Palmares
@@ -183,21 +268,21 @@ Promise.all([data_conferencia, data_palmares, data_season]).then(function(data) 
 
   // Función para ver si se cambió el filtro de conferencia
   d3.select('#conferencia').on('change', function() {
-    update_vis_2(true);
+    update_vis_2(true, equipos_seleccionados);
   });
 
   // Función para ver si se cambió el boton de palmares
   d3.select('#palmares').on('click', function() {
-    update_vis_2(false);
+    update_vis_2(false, equipos_seleccionados);
   });
 
   // Función para ver si se cambió el filtro de season
   d3.select('#season').on('change', function() {
-    update_vis_2(true);
+    update_vis_2(true, equipos_seleccionados);
   });
 
   // Función para actualizar el gráfico
-  function update_vis_2(bool_conferencia) {
+  function update_vis_2(bool_conferencia, equipos_seleccionados) {
     const selected_conferencia = d3.select('#conferencia').property('value');
     const selected_season = d3.select('#season').property('value');
 
@@ -237,23 +322,35 @@ Promise.all([data_conferencia, data_palmares, data_season]).then(function(data) 
       .style('text-anchor', 'end')
       .attr('dx', '-.8em')
       .attr('dy', '-.55em')
-      .attr('transform', 'rotate(-45)');
+      .attr('transform', 'rotate(-45)')
+      .attr('font-size', '12px')
+      .attr('fill', 'white');
 
     g.append('g')
       .attr('class', 'axis')
       .call(d3.axisLeft(y).ticks(null, 's'))
+      .selectAll('text')
+      .attr('font-size', '12px')
+      .attr('fill', 'white')
       .append('text')
       .attr('x', 2)
       .attr('y', y(y.ticks().pop()) + 0.5)
       .attr('dy', '0.32em')
       .attr('fill', '#000')
       .attr('font-weight', 'bold')
-      .attr('text-anchor', 'start');
+      .attr('text-anchor', 'start')
+      .attr('font-size', '12px')
+      .text('Victorias')
+      .attr('fill', 'white');
+
+    // Cambiamos el color de los ejes
+    g.selectAll('.axis').selectAll('path').attr('stroke', 'white');
+    g.selectAll('.axis').selectAll('line').attr('stroke', 'white');
 
     // Definimos la data
     const data = bool_conferencia ? equipos_comunes : filtered_palmares;
 
-    // Agregamos las barras
+    // Agregamos las barras que funcionen con enter, update y exit
     if (bool_conferencia) {
       g.selectAll('.bar').remove();
       const bars = g.selectAll('g.bar')
@@ -264,7 +361,7 @@ Promise.all([data_conferencia, data_palmares, data_season]).then(function(data) 
         .attr('transform', d => `translate(${x0(d.Team)}, 0)`);
     
       bars.selectAll('rect')
-        .data(d => ['Victorias', 'Derrotas'].map(key => ({key, value: d[key]})))
+        .data(d => ['Victorias', 'Derrotas'].map(key => ({team: d.Team,  image: d.Image, key, value: d[key]})))
         .enter()
         .append('rect')
         .attr('x', d => x1(d.key))
@@ -273,7 +370,20 @@ Promise.all([data_conferencia, data_palmares, data_season]).then(function(data) 
         .attr('height', d => height - y(d.value))
         .attr('fill', d => d.key === 'Victorias' ? '#003da5' : '#ce1141')
         .on('mouseover', function(event, d) {
-          tooltip2.html(`Equipo: ${d.Team} <br> ${d.key}: ${d.value}`)
+          tooltip2.html(`<img src="${d.image}" alt="Imagen de ${d.team}" style="width:50px;height:auto;"><br>Equipo: ${d.team} <br> ${d.key}: ${d.value}`)
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY -20) + 'px');
+          tooltip2.style('opacity', 1);
+        })
+        .on('mouseout', function() {
+          tooltip2.style('opacity', 0);
+        });
+
+      g.selectAll('.axis text')
+        .on('mouseover', function(event, d) {
+          const dataPoint = x0.domain().find(x => x === d);
+          const logo = seasonMap.find(x => x.Team === dataPoint);
+          tooltip2.html(`<img src="${logo.Image}" alt="Imagen de ${d}" style="width:50px;height:auto;"><br>Equipo: ${d} <br> Temporada: ${selected_season} <br> ${bool_conferencia ? 'Victorias' : 'Campeonatos'}: ${bool_conferencia ? logo.Victorias : logo.Campeonatos} <br> ${bool_conferencia ? 'Derrotas' : 'Subcampeonatos'}: ${bool_conferencia ? logo.Derrotas : logo.Subcampeonatos}`)
                 .style('left', (event.pageX + 10) + 'px')
                 .style('top', (event.pageY -20) + 'px');
           tooltip2.style('opacity', 1);
@@ -295,7 +405,7 @@ Promise.all([data_conferencia, data_palmares, data_season]).then(function(data) 
         .attr('transform', d => `translate(${x0(d.Equipo)}, 0)`);
 
       bars.selectAll('rect')
-        .data(d => ['Campeonatos', 'Subcampeonatos'].map(key => ({key, value: d[key]})))
+        .data(d => ['Campeonatos', 'Subcampeonatos'].map(key => ({Equipo: d.Equipo,  image: d.Image, key, value: d[key]})))
         .enter()
         .append('rect')
         .attr('x', d => x1(d.key))
@@ -306,17 +416,39 @@ Promise.all([data_conferencia, data_palmares, data_season]).then(function(data) 
         //tooltip para palmares con el nombre del equipo, campeonatos y subcampeonatos y el logo
         .on('mouseover', function(event, d) {
           const logo = data.find(x => x.Equipo === d.Equipo);
-          tooltip2.html(`<object data="${logo.Image}" type="image/svg+xml"></object> <br> Equipo: ${d.Equipo} <br> ${d.key}: ${d.value}`)
+          tooltip2.html(`<img src="${logo.Image}" alt="Imagen de ${d.Equipo}" style="width:50px;height:auto;"><br>Equipo: ${d.Equipo} <br> ${d.key}: ${d.value}`)
                 .style('left', (event.pageX + 10) + 'px')
                 .style('top', (event.pageY -20) + 'px');
           tooltip2.style('opacity', 1);
         })
         .on('mouseout', function() {
           tooltip2.style('opacity', 0);
+        })
+
+      const datos_filtrados = data.filter(x => equipos_seleccionados.has(x.Equipo));
+      console.log(datos_filtrados);
+
+      bars.selectAll('rect')
+        .transition()
+        .attr('stroke', d => equipos_seleccionados.has(d.Equipo) ? 'white' : 'none')
+        .attr('stroke-width', d => equipos_seleccionados.has(d.Equipo) ? '2.5px' : '1.0px');
+
+        
+
+      g.selectAll('.axis text')
+        .on('mouseover', function(event, d) {
+          const dataPoint = x0.domain().find(x => x === d);
+          const logo = palmaresMap.find(x => x.Equipo === dataPoint);
+          tooltip2.html(`<img src="${logo.Image}" alt="Imagen de ${d}" style="width:50px;height:auto;"><br>Equipo: ${d} <br> ${bool_conferencia ? 'Victorias' : 'Campeonatos'}: ${bool_conferencia ? logo.Victorias : logo.Campeonatos} <br> ${bool_conferencia ? 'Derrotas' : 'Subcampeonatos'}: ${bool_conferencia ? logo.Derrotas : logo.Subcampeonatos}`)
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY -20) + 'px');
+          tooltip2.style('opacity', 1);
+
+        })
+        .on('mouseout', function() {
+          tooltip2.style('opacity', 0);
         });
     }
-    
-
 
     // Agregamos la leyenda
     g.selectAll('.legend').remove();
@@ -338,11 +470,12 @@ Promise.all([data_conferencia, data_palmares, data_season]).then(function(data) 
       .attr('y', 9)
       .attr('dy', '0.32em')
       .attr('text-anchor', 'end')
-      .text(d => d);
+      .text(d => d)
+      .attr('fill', 'white');
 
   }
 
-  update_vis_2(true);
+  update_vis_2(true, 'none');
 
 });
 
@@ -355,6 +488,8 @@ Promise.all([data_conferencia, data_palmares, data_season]).then(function(data) 
 
 const width3 = 1200;
 const height3 = 900;
+const width3_2 = 300;
+const height3_2 = 300;
 
 SVG3.attr('width', width3 ).attr('height', height3);
 
@@ -362,6 +497,96 @@ SVG3.attr('width', width3 ).attr('height', height3);
 d3.csv('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PLAYERS_NBA.csv').then(function (jugadores) {
 
 
+SVG3_2.attr('width', width3_2).attr('height', height3_2);
+
+SVG3_2.append('g')
+.append('text')
+.attr('x', 10)
+.attr('y', 10)
+.attr('dy', '0.32em')
+.attr('text-anchor', 'start')
+.attr('font-size', '16px')
+.text('Estadísticas jugador')
+.attr('fill', 'white');
+
+const info = SVG3_2.append('g')
+.style('visibility', 'hidden');
+
+const nombre = info.append('text')
+.attr('x', 10)
+.attr('y', 30)
+.attr('dy', '0.32em')
+.attr('text-anchor', 'start')
+.attr('font-size', '12px')
+.attr('fill', 'white');
+
+const mvp = info.append('text')
+.attr('x', 10)
+.attr('y', 50)
+.attr('dy', '0.32em')
+.attr('text-anchor', 'start')
+.attr('font-size', '12px')
+.attr('fill', 'white');
+
+const pts = info.append('text')
+.attr('x', 10)
+.attr('y', 70)
+.attr('dy', '0.32em')
+.attr('text-anchor', 'start')
+.attr('font-size', '12px')
+.attr('fill', 'white');
+
+const tri = info.append('text')
+.attr('x', 10)
+.attr('y', 90)
+.attr('dy', '0.32em')
+.attr('text-anchor', 'start')
+.attr('font-size', '12px')
+.attr('fill', 'white');
+
+const fg = info.append('text')
+.attr('x', 10)
+.attr('y', 110)
+.attr('dy', '0.32em')
+.attr('text-anchor', 'start')
+.attr('font-size', '12px')
+.attr('fill', 'white');
+
+const ft = info.append('text')
+.attr('x', 10)
+.attr('y', 130)
+.attr('dy', '0.32em')
+.attr('text-anchor', 'start')
+.attr('font-size', '12px')
+.attr('fill', 'white');
+
+const imagen = info.append('image')
+.attr('x', 70)
+.attr('y', 130)
+.attr('width', 180)
+.attr('height', 180);
+
+function actualizar_vis_32(d) {
+  nombre.style('font-weight', 'bold').text(`Nombre: ${d.Player}`);
+  mvp.style('font-weight', 'bold').text(`MVP: ${d.MVP}`);
+  pts.style('font-weight', 'bold').text(`Promedio de puntos p/p: ${parseFloat(d.PTS).toFixed(2)}`);
+  tri.style('font-weight', 'bold').text(`% triples p/p: ${parseFloat(d.TRI).toFixed(2)}`);
+  fg.style('font-weight', 'bold').text(`% de tiros de campo p/p: ${parseFloat(d.FG).toFixed(2)}`);
+  ft.style('font-weight', 'bold').text(`% de tiros libres p/p: ${parseFloat(d.FT).toFixed(2)}`);
+  imagen.attr('href', d.Image);
+  info.style('visibility', 'visible');
+}
+
+function limpiar_vis_32() {
+  nombre.text('');
+  mvp.text('');
+  pts.text('');
+  tri.text('');
+  fg.text('');
+  ft.text('');
+  imagen.attr('href', '');
+  info.style('visibility', 'hidden');
+}
 
 
   // const sorted_pts = jugadores.slice().sort((a, b) => b.PTS - a.PTS);
@@ -370,19 +595,26 @@ d3.csv('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PLAY
   // Función para preprocesar los datos según el filtro
   function preprocesar_vis_3(filtro) {
     // Cada vez que se cambie el filtro, se debe volver a preprocesar los datos
-    d3.select('#MVP').on('click', (event) => {
+    d3.select('#MVP')
+    .classed('button-gold', true)
+    .on('click', (event) => {
       filtro = '0';
       preprocesar_vis_3(filtro);
+      limpiar_vis_32();
     });
 
-    d3.select('#no-MVP').on('click', (event) => {
+    d3.select('#no-MVP')
+    .classed('button-white', true)
+    .on('click', (event) => {
       filtro = '1';
       preprocesar_vis_3(filtro);
+      limpiar_vis_32();
     });
 
     d3.select('#ALL').on('click', (event) => {
       filtro = '2';
       preprocesar_vis_3(filtro);
+      limpiar_vis_32();
     });
 
 
@@ -391,6 +623,7 @@ d3.csv('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PLAY
     d3.select('#order-by').on('change', (_) => {
       let orden = document.getElementById('order-by').selectedOptions[0].value;
       create_vis_3_aux(orden, filtro);
+      limpiar_vis_32();
     })
 
     // Llamamos a la función para crear la visualización
@@ -401,7 +634,7 @@ d3.csv('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PLAY
   // Función para crear la visualización
   function create_vis_3_aux(orden, filtro) {
     let variable = 'PTS';
-    console.log(orden, filtro);
+    // console.log(orden, filtro);
     // Se filtran los datos según el filtro
     let filtered_jugadores = jugadores;
     if (filtro === '0') {
@@ -433,7 +666,7 @@ d3.csv('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PLAY
       variable = 'FT';
     }
 
-    console.log(variable);
+    // console.log(variable);
 
     // Nos quedamos con los 20 primeros
     filtered_jugadores = filtered_jugadores.slice(0, 25);
@@ -479,7 +712,7 @@ d3.csv('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PLAY
       return escalas[stat];
     }
 
-    console.log(filtered_jugadores);
+    // console.log(filtered_jugadores);
 
     const escala = obtenerEscala(variable);
 
@@ -494,7 +727,7 @@ d3.csv('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PLAY
       .join(
         enter => {
 
-          console.log(variable);
+          // console.log(variable);
 
           const circles = enter.append('g')
             .attr('class', 'circle')
@@ -504,7 +737,11 @@ d3.csv('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PLAY
           circles.append('circle')
             .attr('r', d => escala(d[variable]))
             .style('stroke', d => d.MVP > 0 ? 'gold' : 'white')
-            .style('stroke-width', d => d.MVP > 0 ? '2.5px' : '1.5px');
+            .style('stroke-width', d => d.MVP > 0 ? '2.5px' : '1.5px')
+            .on('click', function(event, d) {
+              // console.log(d);
+              actualizar_vis_32(d);
+            });
 
 
           circles.append('image')
@@ -513,13 +750,19 @@ d3.csv('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PLAY
             .attr('height', d => escala(d[variable])*3/2)
             .attr('y', d => -escala(d[variable])*3/4)
             .attr('x', (d, i) => {
-              console.log(d.Player); 
-              console.log(`La variable es ${variable}`)
-              console.log(`El dato es ${d[variable]}`)
-              console.log(`La escala a usar es ${obtenerEscala(variable)}`)
-              console.log(escala(d[variable]))
+              // console.log(d.Player); 
+              // console.log(`La variable es ${variable}`)
+              // console.log(`El dato es ${d[variable]}`)
+              // console.log(`La escala a usar es ${obtenerEscala(variable)}`)
+              // console.log(escala(d[variable]))
               return -escala(d[variable])*3/4;
-            });
+            })
+            .on('click', function(event, d) {
+              // console.log(d);
+              actualizar_vis_32(d);
+            })
+
+
 
           return circles;
         },
@@ -543,7 +786,6 @@ d3.csv('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PLAY
           exit.remove();
         }
       );
-
 
     function ticked() {
       burbujas.attr('transform', d => `translate(${d.x},${d.y})`);
@@ -577,6 +819,22 @@ d3.csv('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PLAY
 
     }
 
+  // Creamos un zoom para la visualización
+    const zoom = d3.zoom().scaleExtent([1, 8]).on('zoom', zoomed);
+
+    SVG3.call(zoom);
+
+    function zoomed(event) {
+      SVG3.selectAll('circle')
+        .attr('transform', event.transform);
+
+      SVG3.selectAll('image')
+        .attr('transform', event.transform);
+
+      SVG3.selectAll('text')
+        .attr('transform', event.transform);
+    }
+
   }
 
   // create_vis_3_aux(orden, filtro);
@@ -586,6 +844,7 @@ d3.csv('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PLAY
   preprocesar_vis_3('2');
 
 });
+
 
 
 
