@@ -361,6 +361,9 @@ SVG3.attr('width', width3 ).attr('height', height3);
     
 d3.csv('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PLAYERS_NBA.csv').then(function (jugadores) {
 
+
+
+
   // const sorted_pts = jugadores.slice().sort((a, b) => b.PTS - a.PTS);
   // const filtered_jugadores = sorted_pts.slice(0, 20);
 
@@ -393,12 +396,6 @@ d3.csv('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PLAY
     // Llamamos a la función para crear la visualización
     let orden = document.getElementById('order-by').selectedOptions[0].value;
     create_vis_3_aux(orden, filtro);
-
-
-
-
-
-
 
 
   // Función para crear la visualización
@@ -439,44 +436,117 @@ d3.csv('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PLAY
     console.log(variable);
 
     // Nos quedamos con los 20 primeros
-    filtered_jugadores = filtered_jugadores.slice(0, 20);
+    filtered_jugadores = filtered_jugadores.slice(0, 25);
+
+
+    const escala_pts = d3 
+        .scaleLinear()
+        //.domain([d3.min(jugadores, d => d.PTS), d3.max(jugadores, d => d.PTS)])
+        .domain([d3.min(filtered_jugadores , d => d.PTS), d3.max(filtered_jugadores , d => d.PTS)])
+        //.domain([15, 30])
+        .range([30, 120]);
+
+    const escala_3p = d3 
+        .scaleLinear()
+        //.domain([d3.min(jugadores, d => d.TRI), d3.max(jugadores, d => d.TRI)])
+        .domain([d3.min(filtered_jugadores , d => d.TRI), d3.max(filtered_jugadores , d => d.TRI)])
+        //.domain([0.35, 0.55])
+        .range([30, 120]);
+
+    const escala_fg = d3 
+        .scaleLinear()
+        //.domain([d3.min(jugadores, d => d.FG), d3.max(jugadores, d => d.FG)])
+        .domain([d3.min(filtered_jugadores , d => d.FG), d3.max(filtered_jugadores , d => d.FG)])
+        //.domain([0.5, 0.7])
+        .range([30, 120]);
+
+    const escala_ft = d3 
+        .scaleLinear()
+        //.domain([d3.min(jugadores, d => d.FT), d3.max(jugadores, d => d.FT)])
+        .domain([d3.min(filtered_jugadores , d => d.FT), d3.max(filtered_jugadores , d => d.FT)])
+        //.domain([0.75, 0.95])
+        .range([30, 100]);
+
+
+    const escalas = {
+      'PTS': escala_pts,
+      'TRI': escala_3p,
+      'FG': escala_fg,
+      'FT': escala_ft
+    }
+
+    function obtenerEscala(stat) {
+      return escalas[stat];
+    }
 
     console.log(filtered_jugadores);
 
-    // Creamos la simulación según el orden
+    const escala = obtenerEscala(variable);
+
     const simulation = d3.forceSimulation(filtered_jugadores)
-      .force('attractToCenterX', d3.forceX(width3 / 2).strength(0.05)) 
-      .force('attractToCenterY', d3.forceY(height3 / 2).strength(0.05))
-      .force('collision', d3.forceCollide(d => d[variable]*3).strength(0.5)) 
-      .on('tick', ticked);
+    .force('attractToCenterX', d3.forceX(width3 / 2).strength(0.05)) 
+    .force('attractToCenterY', d3.forceY(height3 / 2).strength(0.05))
+    .force('collision', d3.forceCollide(d => escala(d[variable])).strength(0.5)) 
+    .on('tick', ticked);
+
+    const burbujas = SVG3.selectAll('.circle')
+      .data(filtered_jugadores, d => d.Player)
+      .join(
+        enter => {
+
+          console.log(variable);
+
+          const circles = enter.append('g')
+            .attr('class', 'circle')
+            .call(drag(simulation));
+
+          // Si hay presencia de jugadores MVP, el contorno de su círculo es dorado
+          circles.append('circle')
+            .attr('r', d => escala(d[variable]))
+            .style('stroke', d => d.MVP > 0 ? 'gold' : 'white')
+            .style('stroke-width', d => d.MVP > 0 ? '2.5px' : '1.5px');
 
 
-    const circles = SVG3.selectAll('.circle')
-      .data(filtered_jugadores)
-      .enter().append('g')
-      .attr('class', 'circle')
-      .call(drag(simulation));
+          circles.append('image')
+            .attr('href', d => d.Image)
+            .attr('width', d => escala(d[variable])*3/2)
+            .attr('height', d => escala(d[variable])*3/2)
+            .attr('y', d => -escala(d[variable])*3/4)
+            .attr('x', (d, i) => {
+              console.log(d.Player); 
+              console.log(`La variable es ${variable}`)
+              console.log(`El dato es ${d[variable]}`)
+              console.log(`La escala a usar es ${obtenerEscala(variable)}`)
+              console.log(escala(d[variable]))
+              return -escala(d[variable])*3/4;
+            });
 
-    // Si hay presencia de jugadores MVP, el contorno de su círculo es dorado
-    circles.append('circle')
-      .attr('r', d => d[variable]*3)
-      .style('stroke', d => d.MVP > 0 ? 'gold' : 'none');
+          return circles;
+        },
+        update => {
 
-    // circles.append('circle')
-    //   .attr('r', d => d.PTS*3);
+          update.call(drag(simulation));
 
-    circles.append('image')
-      .attr('href', d => d.Image)
-      .attr('width', d => d[variable]*3)
-      .attr('height', d => d[variable]*3)
-      .attr('x', d => -d[variable]*3/2)
-      .attr('y', d => -d[variable]*3/2);
-      //.attr('x', (d, i) => circulos_agregados.nodes()[i].getAttribute('cx') + d.PTS*5)
-      //.attr('y', (d, i) => circles_agregados.nodes()[i].getAttribute('cy') + d.PTS*5);
+          update.select('circle')
+            .attr('r', d => escala(d[variable]));
+
+          update.select('image')
+          .attr('href', d => d.Image)
+          .attr('width', d => escala(d[variable])*3/2)
+          .attr('height', d => escala(d[variable])*3/2)
+          .attr('y', d => -escala(d[variable])*3/4)
+          .attr('x', d => -escala(d[variable])*3/4);
+          
+          return update;
+        },
+        exit => {
+          exit.remove();
+        }
+      );
 
 
     function ticked() {
-      circles.attr('transform', d => `translate(${d.x},${d.y})`);
+      burbujas.attr('transform', d => `translate(${d.x},${d.y})`);
         //.attr('cx', d => d.x)
         //.attr('cy', d => d.y);
     }
