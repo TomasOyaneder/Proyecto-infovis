@@ -68,6 +68,49 @@ function zoomed(event) {
 
 }
 
+// Carga de datos
+const data_conferencia = d3.json('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/arenas.geojson');
+const data_palmares = d3.dsv(';', 'https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PALMARES_NBA_NUEVO_.csv');
+const data_season = d3.csv('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/teams_nba.csv');
+
+function parseo_conferencia(d) {
+  return {
+    team: d.properties.team,
+    conference: d.properties.conference,
+  };
+}
+
+function parseo_palmares(d) {
+  return {
+    Equipo: d.Equipo,
+    Campeonatos: +d.Campeonatos,
+    Subcampeonatos: +d.Subcampeonatos,
+    Titulos: d.Títulos,
+    Image: d.Image,
+  }
+}
+
+function parseo_season(d) {
+  return {
+    Team: d.Nombre,
+    Season: d.Temporada,
+    Victorias: +d.Victorias,
+    Derrotas: +d.Derrotas,
+    Image: d.Image,
+  }
+}
+
+Promise.all([data_conferencia, data_palmares, data_season]).then(function(data) {
+  const conferencia = data[0];
+  const palmares = data[1];
+  const season = data[2];
+
+  const conferenciasMap = conferencia.features.map(parseo_conferencia);
+  const palmaresMap = palmares.map(parseo_palmares);
+  const seasonMap = season.map(parseo_season);
+
+  let equipos_seleccionados = new Set();
+
 d3.json('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json').then(function (us) {
 
   SVG1.selectAll('path')
@@ -82,8 +125,6 @@ d3.json('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/g
 
   d3.json('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/arenas.geojson').then(function (geo_teams) {
     d3.dsv(';', 'https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PALMARES_NBA_NUEVO_.csv').then(function(teams) {
-
-    let equipos_seleccionados = new Set();
 
     SVG1.selectAll('circle')
     .data(geo_teams.features)
@@ -129,7 +170,7 @@ d3.json('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/g
         update_vis_2(false, equipos_seleccionados);
       }
 
-      //console.log(equipos_seleccionados);
+      console.log(equipos_seleccionados);
     });
 
 
@@ -164,6 +205,12 @@ d3.json('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/g
       .data(geo_teams.features)
       .attr('stroke', d => d.properties.conference === 'Eastern' ? 'white' : 'none')
       .attr('stroke-width', d => d.properties.conference === 'Eastern' ? '1.5px' : '1.0px');
+
+    equipos_seleccionados.clear();
+    // Rellenamos equipos_seleccionados con los equipos de la conferencia Este
+    equipos_seleccionados = new Set(geo_teams.features.filter(d => d.properties.conference === 'Eastern').map(d => d.properties.team));
+
+    update_vis_2(false, equipos_seleccionados);
   });
 
   d3.select('#Western').on('click', function() {
@@ -180,6 +227,10 @@ d3.json('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/g
       .attr('stroke', d => d.properties.conference === 'Western' ? 'white' : 'none')
       .attr('stroke-width', d => d.properties.conference === 'Western' ? '1.5px' : '1.0px');
 
+    equipos_seleccionados.clear();
+    // Rellenamos equipos_seleccionados con los equipos de la conferencia Oeste
+    equipos_seleccionados = new Set(geo_teams.features.filter(d => d.properties.conference === 'Western').map(d => d.properties.team));
+
   });
 
   d3.select('#reset').on('click', function() {
@@ -194,13 +245,29 @@ d3.json('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/g
       .data(geo_teams.features)
       .attr('stroke', 'none');
 
-  });
+  })
+  .on('click', function() {
+    console.log('Reset');
+    equipos_seleccionados.clear();
+    SVG1.selectAll('circle')
+      .data(geo_teams.features)
+      .classed('selected', false)
+      .attr('stroke', 'none');
+
+    SVG1.selectAll('text')
+      .data(geo_teams.features)
+      .classed('selected', false)
+      .attr('stroke', 'none');
+
+    update_vis_2(false, equipos_seleccionados);
+  }
+  );
 
   });
 
   });
 
-});
+// });
 
 
 // Visualización 2 - Gráfico de barras agrupado
@@ -225,46 +292,51 @@ const g = SVG2.append('g')
 
 const tooltip2 = d3.select("#tooltip2");
 
-// Carga de datos
-const data_conferencia = d3.json('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/arenas.geojson');
-const data_palmares = d3.dsv(';', 'https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PALMARES_NBA_NUEVO_.csv');
-const data_season = d3.csv('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/teams_nba.csv');
+// // Carga de datos
+// const data_conferencia = d3.json('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/arenas.geojson');
+// const data_palmares = d3.dsv(';', 'https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/PALMARES_NBA_NUEVO_.csv');
+// const data_season = d3.csv('https://raw.githubusercontent.com/TomasOyaneder/Datos-proyecto/main/teams_nba.csv');
 
-function parseo_conferencia(d) {
-  return {
-    team: d.properties.team,
-    conference: d.properties.conference,
-  };
-}
+// function parseo_conferencia(d) {
+//   return {
+//     team: d.properties.team,
+//     conference: d.properties.conference,
+//   };
+// }
 
-function parseo_palmares(d) {
-  return {
-    Equipo: d.Equipo,
-    Campeonatos: +d.Campeonatos,
-    Subcampeonatos: +d.Subcampeonatos,
-    Titulos: d.Títulos,
-    Image: d.Image,
-  }
-}
+// function parseo_palmares(d) {
+//   return {
+//     Equipo: d.Equipo,
+//     Campeonatos: +d.Campeonatos,
+//     Subcampeonatos: +d.Subcampeonatos,
+//     Titulos: d.Títulos,
+//     Image: d.Image,
+//   }
+// }
 
-function parseo_season(d) {
-  return {
-    Team: d.Nombre,
-    Season: d.Temporada,
-    Victorias: +d.Victorias,
-    Derrotas: +d.Derrotas,
-    Image: d.Image,
-  }
-}
+// function parseo_season(d) {
+//   return {
+//     Team: d.Nombre,
+//     Season: d.Temporada,
+//     Victorias: +d.Victorias,
+//     Derrotas: +d.Derrotas,
+//     Image: d.Image,
+//   }
+// }
 
-Promise.all([data_conferencia, data_palmares, data_season]).then(function(data) {
-  const conferencia = data[0];
-  const palmares = data[1];
-  const season = data[2];
 
-  const conferenciasMap = conferencia.features.map(parseo_conferencia);
-  const palmaresMap = palmares.map(parseo_palmares);
-  const seasonMap = season.map(parseo_season);
+
+
+
+
+// Promise.all([data_conferencia, data_palmares, data_season]).then(function(data) {
+//   const conferencia = data[0];
+//   const palmares = data[1];
+//   const season = data[2];
+
+//   const conferenciasMap = conferencia.features.map(parseo_conferencia);
+//   const palmaresMap = palmares.map(parseo_palmares);
+//   const seasonMap = season.map(parseo_season);
 
   // Función para ver si se cambió el filtro de conferencia
   d3.select('#conferencia').on('change', function() {
@@ -476,6 +548,8 @@ Promise.all([data_conferencia, data_palmares, data_season]).then(function(data) 
   }
 
   update_vis_2(true, 'none');
+
+});
 
 });
 
